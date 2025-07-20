@@ -3,161 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Прогноз риска сердечного приступа</title>
+    <title>💓 Heart Disease Prediction</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 20px;
         }
+        
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
+        
         .header {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             padding: 30px;
             text-align: center;
         }
+        
         .header h1 {
-            margin: 0;
             font-size: 2.5em;
-            font-weight: 300;
+            margin-bottom: 10px;
         }
+        
         .header p {
-            margin: 10px 0 0 0;
+            font-size: 1.2em;
             opacity: 0.9;
+        }
+        
+        .nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .nav button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
             font-size: 1.1em;
+            transition: all 0.3s ease;
         }
+        
+        .nav button.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .nav button:hover {
+            background: #0056b3;
+            color: white;
+        }
+        
         .content {
-            padding: 40px;
-        }
-        .upload-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .file-input {
+            padding: 30px;
             display: none;
         }
-        .file-label {
-            display: inline-block;
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        
+        .content.active {
+            display: block;
         }
-        .file-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        
+        .form-group {
+            margin-bottom: 20px;
         }
-        .selected-file {
-            margin-top: 15px;
-            padding: 10px;
-            background: #f8f9fa;
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            border-left: 4px solid #28a745;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
         }
-        .btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
             border: none;
+        }
+        
+        .value-display {
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
             padding: 15px 30px;
-            border-radius: 25px;
+            border: none;
+            border-radius: 8px;
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 10px;
+            width: 100%;
+            margin-top: 20px;
         }
+        
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
         }
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .results {
-            margin-top: 30px;
+        
+        .result {
+            margin-top: 20px;
             padding: 20px;
-            background: #f8f9fa;
             border-radius: 10px;
-            display: none;
-        }
-        .results h3 {
-            color: #333;
-            margin-top: 0;
-        }
-        .status {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
+            text-align: center;
+            font-size: 1.2em;
             font-weight: bold;
         }
-        .status.success {
+        
+        .result.low-risk {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        .status.error {
+        
+        .result.high-risk {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        .download-link {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
         }
-        .download-link:hover {
-            background: #218838;
+        
+        .file-upload:hover {
+            border-color: #007bff;
         }
-        .info-section {
-            background: #e3f2fd;
+        
+        .file-upload input {
+            display: none;
+        }
+        
+        .file-upload label {
+            cursor: pointer;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
         }
-        .info-section h3 {
-            color: #1976d2;
-            margin-top: 0;
+        
+        .info-card h3 {
+            color: #007bff;
+            margin-bottom: 10px;
         }
-        .info-section ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .info-section li {
-            margin: 5px 0;
-        }
+        
         .loading {
             display: none;
             text-align: center;
             margin: 20px 0;
         }
+        
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #007bff;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 10px;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -167,123 +251,462 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💓 Прогноз риска сердечного приступа</h1>
-            <p>Загрузите CSV файл с данными для получения предсказаний</p>
+            <h1>💓 Heart Disease Prediction</h1>
+            <p>Система прогнозирования риска сердечного приступа</p>
         </div>
         
-        <div class="content">
-            <div class="info-section">
-                <h3>📋 Информация о системе</h3>
-                <ul>
-                    <li><strong>Модель:</strong> Random Forest Classifier</li>
-                    <li><strong>Формат входных данных:</strong> CSV файл с обязательным столбцом 'id'</li>
-                    <li><strong>Автоматически удаляемые столбцы:</strong> Smoking, Blood sugar, CK-MB, Troponin, Unnamed: 0</li>
-                    <li><strong>Результат:</strong> CSV файл с колонками 'id' и 'prediction'</li>
-                </ul>
-            </div>
+        <div class="nav">
+            <button onclick="showTab('single', this)" class="active">👤 Одиночный прогноз</button>
+            <button onclick="showTab('batch', this)">📁 Загрузка файла</button>
+            <button onclick="showTab('info', this)">ℹ️ Информация</button>
+        </div>
+        
+        <div id="single" class="content active">
+            <h2>Одиночный прогноз</h2>
+            <form id="predictionForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label>Возраст (Age):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Age" name="Age" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Age-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Холестерин (Cholesterol):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Cholesterol" name="Cholesterol" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Cholesterol-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Частота сердечных сокращений (Heart rate):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Heart rate" name="Heart rate" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Heart rate-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Диабет (Diabetes):</label>
+                    <select id="Diabetes" name="Diabetes">
+                        <option value="0">Нет</option>
+                        <option value="1">Да</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Семейная история (Family History):</label>
+                    <select id="Family History" name="Family History">
+                        <option value="0">Нет</option>
+                        <option value="1">Да</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ожирение (Obesity):</label>
+                    <select id="Obesity" name="Obesity">
+                        <option value="0">Нет</option>
+                        <option value="1">Да</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Употребление алкоголя (Alcohol Consumption):</label>
+                    <select id="Alcohol Consumption" name="Alcohol Consumption">
+                        <option value="0">Нет</option>
+                        <option value="1">Умеренное</option>
+                        <option value="2">Высокое</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Часы упражнений в неделю (Exercise Hours Per Week):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Exercise Hours Per Week" name="Exercise Hours Per Week" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Exercise Hours Per Week-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Диета (Diet):</label>
+                    <select id="Diet" name="Diet">
+                        <option value="0">Плохая</option>
+                        <option value="1">Средняя</option>
+                        <option value="2">Хорошая</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Предыдущие проблемы с сердцем (Previous Heart Problems):</label>
+                    <select id="Previous Heart Problems" name="Previous Heart Problems">
+                        <option value="0">Нет</option>
+                        <option value="1">Да</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Прием лекарств (Medication Use):</label>
+                    <select id="Medication Use" name="Medication Use">
+                        <option value="0">Нет</option>
+                        <option value="1">Да</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Уровень стресса (Stress Level):</label>
+                    <select id="Stress Level" name="Stress Level">
+                        <option value="0">Низкий</option>
+                        <option value="1">Средний</option>
+                        <option value="2">Высокий</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Сидячие часы в день (Sedentary Hours Per Day):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Sedentary Hours Per Day" name="Sedentary Hours Per Day" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Sedentary Hours Per Day-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Доход (Income):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Income" name="Income" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Income-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Индекс массы тела (BMI):</label>
+                    <div class="slider-container">
+                        <input type="range" id="BMI" name="BMI" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="BMI-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Триглицериды (Triglycerides):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Triglycerides" name="Triglycerides" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Triglycerides-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Физическая активность дней в неделю (Physical Activity Days Per Week):</label>
+                    <select id="Physical Activity Days Per Week" name="Physical Activity Days Per Week">
+                        <option value="0">0 дней</option>
+                        <option value="1">1 день</option>
+                        <option value="2">2 дня</option>
+                        <option value="3">3 дня</option>
+                        <option value="4">4 дня</option>
+                        <option value="5">5 дней</option>
+                        <option value="6">6 дней</option>
+                        <option value="7">7 дней</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Сон часов в день (Sleep Hours Per Day):</label>
+                    <select id="Sleep Hours Per Day" name="Sleep Hours Per Day">
+                        <option value="4">4 часа</option>
+                        <option value="5">5 часов</option>
+                        <option value="6">6 часов</option>
+                        <option value="7">7 часов</option>
+                        <option value="8">8 часов</option>
+                        <option value="9">9 часов</option>
+                        <option value="10">10 часов</option>
+                        <option value="11">11 часов</option>
+                        <option value="12">12 часов</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Пол (Gender):</label>
+                    <select id="Gender" name="Gender">
+                        <option value="Female">Женский</option>
+                        <option value="Male">Мужской</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Систолическое давление (Systolic blood pressure):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Systolic blood pressure" name="Systolic blood pressure" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Systolic blood pressure-value">0.50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Диастолическое давление (Diastolic blood pressure):</label>
+                    <div class="slider-container">
+                        <input type="range" id="Diastolic blood pressure" name="Diastolic blood pressure" min="0" max="1" step="0.01" value="0.5" class="slider">
+                        <span class="value-display" id="Diastolic blood pressure-value">0.50</span>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="submitForm()" class="btn">Получить прогноз</button>
+            </form>
             
-            <div class="upload-section">
-                <input type="file" id="csvFile" class="file-input" accept=".csv">
-                <label for="csvFile" class="file-label">📁 Выбрать CSV файл</label>
-                <div id="selectedFile" class="selected-file" style="display: none;"></div>
-            </div>
-            
-            <div style="text-align: center;">
-                <button id="predictBtn" class="btn" disabled>🔮 Выполнить предсказание</button>
-            </div>
-            
-            <div id="loading" class="loading">
+            <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Обрабатываем данные...</p>
+                <p>Обработка данных...</p>
             </div>
             
-            <div id="results" class="results">
-                <h3>📊 Результаты предсказания</h3>
-                <div id="status"></div>
-                <div id="downloadSection" style="display: none;">
-                    <a id="downloadLink" class="download-link" href="#" download="predictions.csv">
-                        📥 Скачать результаты
-                    </a>
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div id="batch" class="content">
+            <h2>Загрузка файла</h2>
+            <p>Загрузите CSV файл с данными для получения прогнозов</p>
+            
+            <div class="file-upload">
+                <input type="file" id="fileInput" accept=".csv">
+                <label for="fileInput">📁 Выберите CSV файл или перетащите сюда</label>
+            </div>
+            
+            <button onclick="uploadFile()" class="btn">Загрузить и получить прогноз</button>
+            
+            <div class="loading" id="batchLoading">
+                <div class="spinner"></div>
+                <p>Обработка файла...</p>
+            </div>
+            
+            <div id="batchResult"></div>
+        </div>
+        
+        <div id="info" class="content">
+            <h2>Информация о модели</h2>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🎯 Алгоритм</h3>
+                    <p>Random Forest Classifier</p>
+                    <p>Параметры: n_estimators=2000, max_depth=10</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>📊 Порог классификации</h3>
+                    <p>0.454 (из мастерской)</p>
+                    <p>При вероятности ≥ 0.454 - высокий риск</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>📋 Признаки</h3>
+                    <p>Всего: 21 признак</p>
+                    <p>Категориальные: 11</p>
+                    <p>Числовые: 10 </p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>⚠️ Важно</h3>
+                    <p>Это прогноз на основе ML</p>
+                    <p>Для точной диагностики обратитесь к врачу</p>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        const fileInput = document.getElementById('csvFile');
-        const selectedFile = document.getElementById('selectedFile');
-        const predictBtn = document.getElementById('predictBtn');
-        const loading = document.getElementById('loading');
-        const results = document.getElementById('results');
-        const status = document.getElementById('status');
-        const downloadSection = document.getElementById('downloadSection');
-        const downloadLink = document.getElementById('downloadLink');
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile.textContent = `Выбран файл: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                selectedFile.style.display = 'block';
-                predictBtn.disabled = false;
+        // Показ вкладок
+        function showTab(tabName, element) {
+            console.log('Переключение на вкладку:', tabName);
+            
+            // Скрываем все вкладки
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную вкладку
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                element.classList.add('active');
             } else {
-                selectedFile.style.display = 'none';
-                predictBtn.disabled = true;
+                console.error('Вкладка не найдена:', tabName);
             }
+        }
+        
+        // Обновление значений слайдеров
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.slider').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    const value = parseFloat(this.value).toFixed(2);
+                    const valueDisplay = document.getElementById(this.id + '-value');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                });
+            });
         });
-
-        predictBtn.addEventListener('click', async function() {
-            const file = fileInput.files[0];
-            if (!file) return;
-
+        
+        // Обработка формы
+        async function submitForm() {
+            const form = document.getElementById('predictionForm');
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                // Правильно обрабатываем числовые и строковые значения
+                if (key === 'Gender') {
+                    data[key] = value; // Оставляем как строку
+                } else if (['Physical Activity Days Per Week', 'Sleep Hours Per Day'].includes(key)) {
+                    data[key] = parseInt(value) || 0; // Целые числа
+                } else if (['Diabetes', 'Family History', 'Obesity', 'Previous Heart Problems', 'Medication Use'].includes(key)) {
+                    data[key] = parseInt(value) || 0; // Бинарные признаки
+                } else if (['Alcohol Consumption', 'Diet', 'Stress Level'].includes(key)) {
+                    data[key] = parseInt(value) || 0; // Категориальные признаки
+                } else {
+                    data[key] = parseFloat(value) || 0; // Числовые признаки
+                }
+            }
+            
+            console.log('Отправляемые данные:', data);
+            
             // Показываем загрузку
-            loading.style.display = 'block';
-            results.style.display = 'none';
-            predictBtn.disabled = true;
-
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-
+                const response = await fetch('/api/predict/single', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('Ответ сервера:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Результат:', result);
+                
+                // Скрываем загрузку
+                document.getElementById('loading').style.display = 'none';
+                
+                // Показываем результат
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (result.prediction === 1) {
+                    resultDiv.className = 'result high-risk';
+                    resultDiv.innerHTML = `
+                        <h3>⚠️ ВЫСОКИЙ РИСК</h3>
+                        <p>Вероятность: ${(result.probability * 100).toFixed(1)}%</p>
+                        <p>Порог: ${(result.threshold * 100).toFixed(1)}%</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result low-risk';
+                    resultDiv.innerHTML = `
+                        <h3>✅ НИЗКИЙ РИСК</h3>
+                        <p>Вероятность: ${(result.probability * 100).toFixed(1)}%</p>
+                        <p>Порог: ${(result.threshold * 100).toFixed(1)}%</p>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('Ошибка при получении прогноза: ' + error.message);
+            }
+        }
+        
+        // Загрузка файла
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Пожалуйста, выберите файл');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Показываем загрузку
+            document.getElementById('batchLoading').style.display = 'block';
+            document.getElementById('batchResult').innerHTML = '';
+            
+            try {
                 const response = await fetch('/api/predict/file', {
                     method: 'POST',
                     body: formData
                 });
-
+                
                 const result = await response.json();
-
-                if (response.ok) {
-                    // Успешный результат
-                    status.innerHTML = `
-                        <div class="status success">
-                            ✅ ${result.message}<br>
-                            🤖 Модель: ${result.model_used}<br>
-                            📈 Обработано образцов: ${result.total_samples}
+                
+                // Скрываем загрузку
+                document.getElementById('batchLoading').style.display = 'none';
+                
+                if (result.success) {
+                    // Создаем CSV данные для скачивания
+                    const csvContent = "data:text/csv;charset=utf-8," + 
+                        "id,prediction\n" + 
+                        result.data.map(row => `${row.id},${row.prediction}`).join('\n');
+                    
+                    // Создаем ссылку для скачивания
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = encodeURI(csvContent);
+                    downloadLink.download = 'predictions.csv';
+                    downloadLink.className = 'btn';
+                    downloadLink.textContent = '📥 Скачать результаты';
+                    downloadLink.style.marginTop = '20px';
+                    
+                    document.getElementById('batchResult').innerHTML = `
+                        <div class="result low-risk">
+                            <h3>✅ Файл обработан</h3>
+                            <p>Обработано образцов: ${result.samples}</p>
+                            <p>Прогнозы готовы к скачиванию</p>
                         </div>
                     `;
                     
-                    // Показываем ссылку для скачивания
-                    if (result.predictions_file) {
-                        downloadLink.href = `/api/download/${result.predictions_file}`;
-                        downloadSection.style.display = 'block';
-                    }
+                    document.getElementById('batchResult').appendChild(downloadLink);
                 } else {
-                    // Ошибка
-                    status.innerHTML = `
-                        <div class="status error">
-                            ❌ Ошибка: ${result.detail || 'Неизвестная ошибка'}
+                    document.getElementById('batchResult').innerHTML = `
+                        <div class="result high-risk">
+                            <h3>❌ Ошибка</h3>
+                            <p>${result.error}</p>
                         </div>
                     `;
                 }
+                
             } catch (error) {
-                status.innerHTML = `
-                    <div class="status error">
-                        ❌ Ошибка соединения: ${error.message}
-                    </div>
-                `;
-            } finally {
-                loading.style.display = 'none';
-                results.style.display = 'block';
-                predictBtn.disabled = false;
+                document.getElementById('batchLoading').style.display = 'none';
+                alert('Ошибка при загрузке файла: ' + error.message);
+            }
+        }
+        
+        // Drag and drop для файлов
+        const fileUpload = document.querySelector('.file-upload');
+        
+        fileUpload.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#007bff';
+        });
+        
+        fileUpload.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ddd';
+        });
+        
+        fileUpload.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ddd';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
             }
         });
     </script>
