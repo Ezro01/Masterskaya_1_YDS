@@ -650,10 +650,26 @@
                 document.getElementById('batchLoading').style.display = 'none';
                 
                 if (result.success) {
-                    // Создаем CSV данные для скачивания
+                    // Отладочная информация
+                    console.log('Результат от сервера:', result);
+                    console.log('Количество записей:', result.data.length);
+                    console.log('Первые 10 записей:', result.data.slice(0, 10));
+                    
+                    // Проверяем данные перед созданием CSV
+                    const validData = result.data.filter(row => row.id !== undefined && row.prediction !== undefined);
+                    console.log('Валидных записей:', validData.length);
+                    
+                    // Подсчитываем нули и единицы
+                    const zeros = validData.filter(row => row.prediction === 0).length;
+                    const ones = validData.filter(row => row.prediction === 1).length;
+                    console.log(`Нулей: ${zeros}, Единиц: ${ones}`);
+                    
+                    // Создаем CSV данные для скачивания с разделителем ;
                     const csvContent = "data:text/csv;charset=utf-8," + 
-                        "id,prediction\n" + 
-                        result.data.map(row => `${row.id},${row.prediction}`).join('\n');
+                        "id;prediction\n" + 
+                        validData.map(row => `${row.id};${row.prediction}`).join('\n');
+                    
+                    console.log('CSV контент (первые 300 символов):', csvContent.substring(0, 300));
                     
                     // Создаем ссылку для скачивания
                     const downloadLink = document.createElement('a');
@@ -667,6 +683,9 @@
                         <div class="result low-risk">
                             <h3>✅ Файл обработан</h3>
                             <p>Обработано образцов: ${result.samples}</p>
+                            <p>Валидных записей: ${validData.length}</p>
+                            <p>Прогнозов 0 (низкий риск): ${zeros}</p>
+                            <p>Прогнозов 1 (высокий риск): ${ones}</p>
                             <p>Прогнозы готовы к скачиванию</p>
                         </div>
                     `;

@@ -13,6 +13,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from contextlib import asynccontextmanager
 import warnings
+import joblib
 
 # Отключаем предупреждения
 warnings.filterwarnings('ignore')
@@ -42,10 +43,19 @@ class HeartDiseasePredictor:
     def __init__(self):
         self.model = None
         self.feature_names = None
+        self.categorical_features = None
+        self.numerical_features = None
         self.threshold = 0.454  # Правильный порог из мастерской
+        self.model_path = 'heart_disease_model.joblib'
         
     def train_model(self):
         """Обучение модели на основе мастерской"""
+        # Сначала пытаемся загрузить существующую модель
+        if self.load_model():
+            print("✅ Модель загружена из файла")
+            return
+        
+        print("📊 Обучение новой модели...")
         print("📊 Загрузка данных...")
         
         # Загружаем данные
@@ -96,8 +106,47 @@ class HeartDiseasePredictor:
         self.categorical_features = categorical_features
         self.numerical_features = numerical_features
         
-        print(f"✅ Модель обучена с {len(self.feature_names)} признаками")
+        # Сохраняем модель
+        self.save_model()
+        
+        print(f"✅ Модель обучена и сохранена с {len(self.feature_names)} признаками")
         print(f"🎯 Порог классификации: {self.threshold}")
+    
+    def save_model(self):
+        """Сохранение модели и метаданных"""
+        try:
+            model_data = {
+                'model': self.model,
+                'feature_names': self.feature_names,
+                'categorical_features': self.categorical_features,
+                'numerical_features': self.numerical_features,
+                'threshold': self.threshold
+            }
+            joblib.dump(model_data, self.model_path)
+            print(f"💾 Модель сохранена в {self.model_path}")
+        except Exception as e:
+            print(f"❌ Ошибка сохранения модели: {e}")
+    
+    def load_model(self):
+        """Загрузка модели и метаданных"""
+        try:
+            if not os.path.exists(self.model_path):
+                print(f"📁 Файл модели {self.model_path} не найден")
+                return False
+            
+            model_data = joblib.load(self.model_path)
+            self.model = model_data['model']
+            self.feature_names = model_data['feature_names']
+            self.categorical_features = model_data['categorical_features']
+            self.numerical_features = model_data['numerical_features']
+            self.threshold = model_data['threshold']
+            
+            print(f"📁 Модель загружена из {self.model_path}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Ошибка загрузки модели: {e}")
+            return False
         
     def predict_single(self, data_dict):
         """Предсказание для одного пациента"""
@@ -192,6 +241,13 @@ class HeartDiseasePredictor:
             # Применяем порог
             predictions = (risk_probabilities >= self.threshold).astype(int)
             
+            # Отладочная информация
+            print(f"📊 Всего прогнозов: {len(predictions)}")
+            print(f"📊 Прогнозов 0: {sum(predictions == 0)}")
+            print(f"📊 Прогнозов 1: {sum(predictions == 1)}")
+            print(f"🎯 Порог: {self.threshold}")
+            print(f"📊 Примеры вероятностей: {risk_probabilities[:5]}")
+            
             return predictions.tolist()
             
         except Exception as e:
@@ -250,18 +306,48 @@ async def predict_file(file: UploadFile = File(...)):
         # Получаем прогнозы
         predictions = predictor.predict_batch(df)
         
+        # Отладочная информация
+        print(f"📊 Результаты API:")
+        print(f"📊 Всего образцов: {len(df)}")
+        print(f"📊 Всего прогнозов: {len(predictions)}")
+        print(f"📊 Прогнозов 0: {predictions.count(0)}")
+        print(f"📊 Прогнозов 1: {predictions.count(1)}")
+        
         # Создаем результат
         result_df = pd.DataFrame({
             'id': df['id'],
             'prediction': predictions
         })
         
+        # Проверяем результат
+        print(f"📊 Размер result_df: {len(result_df)}")
+        print(f"📊 Колонки result_df: {result_df.columns.tolist()}")
+        print(f"📊 Первые 5 строк result_df:")
+        print(result_df.head())
+        
+        # Проверяем, что все данные корректны
+        data_records = result_df.to_dict('records')
+        print(f"📊 Количество записей в data: {len(data_records)}")
+        print(f"📊 Первые 5 записей в data:")
+        for i, record in enumerate(data_records[:5]):
+            print(f"  Запись {i}: id={record['id']}, prediction={record['prediction']} (тип: {type(record['prediction'])})")
+        
+        # Проверяем, что все прогнозы корректны
+        zeros_count = sum(1 for record in data_records if record['prediction'] == 0)
+        ones_count = sum(1 for record in data_records if record['prediction'] == 1)
+        print(f"📊 В data_records: нулей={zeros_count}, единиц={ones_count}")
+        
+        # Проверяем, что нет None или undefined значений
+        invalid_count = sum(1 for record in data_records if record['prediction'] is None or record['prediction'] == 'undefined')
+        if invalid_count > 0:
+            print(f"⚠️ Найдено {invalid_count} некорректных значений!")
+        
         # Возвращаем результат без сохранения файла
         return {
             "success": True,
             "samples": len(df),
             "predictions": predictions,
-            "data": result_df.to_dict('records')
+            "data": data_records
         }
         
     except Exception as e:
